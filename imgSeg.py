@@ -1,8 +1,13 @@
 def imgSeg(path):
-	import numpy as np
+	
+	from urllib import request
 	import cv2
+	import numpy as np
 
-	img = cv2.imread(path)
+	# URL to image
+	resp = request.urlopen(path)
+	img = np.asarray(bytearray(resp.read()), dtype="uint8")
+	img = cv2.imdecode(img, cv2.IMREAD_COLOR)
 
 	gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 	laplacian = cv2.Laplacian(gray, cv2.CV_8UC1)
@@ -24,7 +29,7 @@ def imgSeg(path):
 
 	count = 0
 	tempY = height
-
+	
 	for i,cnt in enumerate(contours):
 	    # Check if it is an external contour and its area is more than 100
 	    if hierarchy[0,i,3] == -1 : 
@@ -37,12 +42,15 @@ def imgSeg(path):
 
                         if( tempHeight -y > 100 ) :
                             count += 1
-                            #cv2.imwrite("output/Img"+str(count)+".jpg", img[y:tempHeight, 0:0+width])
+                            cv2.imwrite("output/Img"+str(count)+".jpg", img[y:tempHeight, 0:0+width])
                             tempY = y
-	count += 1
-	return count        
+	if(tempY > 10):
+		count += 1
+		cv2.imwrite("output/Img"+str(count)+".jpg", img[0:tempY, 0:0+width])
+	print(count)        
 	#cv2.imwrite("output/Img"+str(count)+".jpg", img[0:tempY, 0:0+width])
 	#cv2.imshow('img', temp)
 	#cv2.waitKey(0)
 	#cv2.destroyAllWindows()
 
+imgSeg('http://gi.esmplus.com/orgastore/img/hobak_total.jpg')
